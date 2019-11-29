@@ -2,8 +2,7 @@ import Flutter
 import UIKit
 
 public class SwiftFlutterAliplayerPlugin: NSObject, FlutterPlugin {
-  public var viewController: UIViewController?
-
+  
   public static func register(with registrar: FlutterPluginRegistrar) {
     let channel = FlutterMethodChannel(name: "flutter_aliplayer", binaryMessenger: registrar.messenger())
     let instance = SwiftFlutterAliplayerPlugin()
@@ -20,23 +19,11 @@ public class SwiftFlutterAliplayerPlugin: NSObject, FlutterPlugin {
     }
   }
 
-  public func initViewController() {
-    viewController = PlayerViewController()
-    viewController!.view.backgroundColor = UIColor.systemGray
-  }
-
   public func handlePlay(result: @escaping FlutterResult) {
     let rootViewController: UIViewController? = UIApplication.shared.keyWindow?.rootViewController
-    initViewController()
-    rootViewController!.present(viewController!, animated: true, completion: nil)
+    rootViewController!.present(PlayerViewController(), animated: true, completion: nil)
     result(nil)
     rootViewController!.dismiss(animated: true, completion: nil)
-//     DispatchQueue.main.async {
-//            let alert = UIAlertController(title: "Alert", message: "Hi, My name is flutter", preferredStyle: .alert);
-//            alert.addAction(UIAlertAction(title: "OK", style: UIAlertActionStyle.default, handler: nil))
-//            UIApplication.shared.keyWindow?.rootViewController?.present(alert, animated: true, completion: nil);
-//        }
-
   }
 
 

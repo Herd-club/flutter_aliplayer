@@ -53,4 +53,6 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.aliyun.sdk.android:AliyunPlayer:4.7.2-full'
     implementation 'com.alivc.conan:AlivcConan:0.9.5'
+    implementation 'com.android.support:appcompat-v7:28.0.0'
+    implementation 'com.android.support:recyclerview-v7:28.0.0'
 }

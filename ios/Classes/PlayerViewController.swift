@@ -1,10 +1,12 @@
 import UIKit
-import AliyunPlayer
+
 
 public class PlayerViewController: UIViewController {
-    override func viewDidLoad() {
+    
+    override public func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .white
+        
     }
 
 }
