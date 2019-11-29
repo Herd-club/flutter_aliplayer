@@ -210,14 +210,13 @@ class AliyunPlayerSkinActivity : Activity() {
         mAliyunVodPlayerView = findViewById<View>(R.id.video_view) as AliyunVodPlayerView
         //保持屏幕敞亮
         mAliyunVodPlayerView!!.keepScreenOn = true
-        PlayParameter.PLAY_PARAM_URL = DEFAULT_URL
         val sdDir = Environment.getExternalStorageDirectory().absolutePath + "/test_save_cache"
         mAliyunVodPlayerView!!.setPlayingCache(false, sdDir, 60 * 60 /*时长, s */, 300 /*大小，MB*/)
         mAliyunVodPlayerView!!.setTheme(AliyunVodPlayerView.Theme.Green)
         //mAliyunVodPlayerView.setCirclePlay(true);
         mAliyunVodPlayerView!!.setAutoPlay(true)
         val source = UrlSource()
-        source.uri = DEFAULT_URL
+        source.uri = PlayParameter.PLAY_PARAM_URL
         mAliyunVodPlayerView!!.setLocalSource(source)
 
         mAliyunVodPlayerView!!.setOnPreparedListener(MyPrepareListener(this))

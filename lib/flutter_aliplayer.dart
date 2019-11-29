@@ -13,7 +13,9 @@ class FlutterAliplayer {
 
   static Future<String> play() async {
     print('hehhehehe');
-    final String version = await _channel.invokeMethod('play');
+    final String version = await _channel.invokeMethod('play', {
+      'url': 'http://player.alicdn.com/video/aliyunmedia.mp4'
+    });
     print('version ==${version}');
     return version;
   }

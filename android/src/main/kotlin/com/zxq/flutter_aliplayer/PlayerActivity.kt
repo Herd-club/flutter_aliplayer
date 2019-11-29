@@ -13,7 +13,6 @@ import com.aliyun.player.source.UrlSource
 import com.aliyun.player.source.VidSts
 import com.zxq.flutter_aliplayer.activity.AliyunUrlPlayFragment
 
-
 class PlayerActivity : Activity() {
     var aliyunVodPlayer: AliPlayer? = null
     var surfaceView: SurfaceView? = null

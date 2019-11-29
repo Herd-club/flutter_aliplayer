@@ -14,7 +14,7 @@ object PlayParameter {
      * localSource: url类型
      *
      */
-    var PLAY_PARAM_TYPE = "vidsts"
+    var PLAY_PARAM_TYPE = "url"
 
     private val PLAY_PARAM_VID_DEFAULT = "9fb028c29acb421cb634c77cf4ebe078"
     /**
@@ -42,6 +42,6 @@ object PlayParameter {
     /**
      * url类型的播放地址, 初始为:http://player.alicdn.com/video/aliyunmedia.mp4
      */
-    var PLAY_PARAM_URL = "http://player.alicdn.com/video/aliyunmedia.mp4"
+    var PLAY_PARAM_URL = ""
 
 }
