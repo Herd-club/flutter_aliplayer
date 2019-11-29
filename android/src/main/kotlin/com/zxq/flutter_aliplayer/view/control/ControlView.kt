@@ -446,7 +446,7 @@ class ControlView : RelativeLayout, ViewAction, ITheme {
     private fun updateShowMoreBtn() {
         if (mAliyunScreenMode == AliyunScreenMode.Full) {
             mTitleMore!!.visibility = View.VISIBLE
-            mTitleDownload!!.visibility = View.GONE
+//            mTitleDownload!!.visibility = View.GONE
         } else {
 //            mTitleMore!!.visibility = View.GONE
 //            mTitleDownload!!.visibility = View.VISIBLE

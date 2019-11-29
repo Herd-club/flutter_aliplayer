@@ -1,6 +1,5 @@
 package com.zxq.flutter_aliplayer.activity
 
-import android.Manifest
 import android.app.Activity
 import android.app.Dialog
 import android.content.Intent
@@ -11,18 +10,14 @@ import android.os.Environment
 import android.os.Handler
 import android.os.Message
 import android.support.v4.content.ContextCompat
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.text.TextUtils
 import android.util.Log
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
-import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RadioGroup
-import android.widget.RelativeLayout
 import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
@@ -114,6 +109,90 @@ class AliyunPlayerSkinActivity : Activity() {
         initAliyunPlayerView()
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        //vid/url设置界面并且是取消
+        if (requestCode == CODE_REQUEST_SETTING && resultCode == Activity.RESULT_CANCELED) {
+            return
+        } else if (requestCode == CODE_REQUEST_SETTING && resultCode == Activity.RESULT_OK) {
+            setPlaySource()
+        }
+    }
+
+    /**
+     * 重新开始
+     */
+    override fun onResume() {
+        super.onResume()
+        mIsInBackground = false
+        updatePlayerViewMode()
+        if (mAliyunVodPlayerView != null) {
+            mAliyunVodPlayerView!!.setAutoPlay(true)
+            mAliyunVodPlayerView!!.onResume()
+        }
+    }
+
+    /**
+     * 停止
+     */
+    override fun onStop() {
+        super.onStop()
+        mIsInBackground = true
+        if (mAliyunVodPlayerView != null) {
+            mAliyunVodPlayerView!!.setAutoPlay(false)
+            mAliyunVodPlayerView!!.onStop()
+        }
+    }
+
+    /**
+     * 暂停
+     */
+    override fun onPause() {
+        super.onPause()
+    }
+
+    /**
+     * 配置变化
+     */
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        updatePlayerViewMode()
+    }
+
+    override fun onDestroy() {
+        if (mAliyunVodPlayerView != null) {
+            mAliyunVodPlayerView!!.onDestroy()
+            mAliyunVodPlayerView = null
+        }
+
+        if (playerHandler != null) {
+            playerHandler!!.removeMessages(DOWNLOAD_ERROR)
+            playerHandler = null
+        }
+
+        if (commenUtils != null) {
+            commenUtils!!.onDestroy()
+            commenUtils = null
+        }
+        super.onDestroy()
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        if (mAliyunVodPlayerView != null) {
+            val handler = mAliyunVodPlayerView!!.onKeyDown(keyCode, event)
+            if (!handler) {
+                return false
+            }
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        //解决某些手机上锁屏之后会出现标题栏的问题。
+        updatePlayerViewMode()
+    }
+
     /**
      * 设置屏幕亮度
      */
@@ -124,6 +203,9 @@ class AliyunPlayerSkinActivity : Activity() {
         window.attributes = lp
     }
 
+    /**
+     * 初始化播放器
+     */
     private fun initAliyunPlayerView() {
         mAliyunVodPlayerView = findViewById<View>(R.id.video_view) as AliyunVodPlayerView
         //保持屏幕敞亮
@@ -143,7 +225,6 @@ class AliyunPlayerSkinActivity : Activity() {
         mAliyunVodPlayerView!!.setOnCompletionListener(MyCompletionListener(this))
         mAliyunVodPlayerView!!.setOnFirstFrameStartListener(MyFrameInfoListener(this))
         mAliyunVodPlayerView!!.setOnChangeQualityListener(MyChangeQualityListener(this))
-        //TODO
         mAliyunVodPlayerView!!.setOnStoppedListener(MyStoppedListener(this))
         mAliyunVodPlayerView!!.setmOnPlayerViewClickListener(MyPlayViewClickListener(this))
         mAliyunVodPlayerView!!.setOrientationChangeListener(MyOrientationChangeListener(this))
@@ -176,16 +257,6 @@ class AliyunPlayerSkinActivity : Activity() {
         VidStsUtil.getVidSts(PlayParameter.PLAY_PARAM_VID, MyStsListener(this))
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        //vid/url设置界面并且是取消
-        if (requestCode == CODE_REQUEST_SETTING && resultCode == Activity.RESULT_CANCELED) {
-            return
-        } else if (requestCode == CODE_REQUEST_SETTING && resultCode == Activity.RESULT_OK) {
-            setPlaySource()
-        }
-    }
-
     /**
      * 播放本地资源
      */
@@ -196,6 +267,9 @@ class AliyunPlayerSkinActivity : Activity() {
         mAliyunVodPlayerView!!.setLocalSource(urlSource)
     }
 
+    /**
+     * 视频准备监听
+     */
     private class MyPrepareListener(skinActivity: AliyunPlayerSkinActivity) : IPlayer.OnPreparedListener {
 
         private val activityWeakReference: WeakReference<AliyunPlayerSkinActivity>
@@ -215,6 +289,9 @@ class AliyunPlayerSkinActivity : Activity() {
         FixedToastUtils.show(this@AliyunPlayerSkinActivity.applicationContext, R.string.toast_prepare_success)
     }
 
+    /**
+     * 视频结束监听
+     */
     private class MyCompletionListener(skinActivity: AliyunPlayerSkinActivity) : IPlayer.OnCompletionListener {
 
         private val activityWeakReference: WeakReference<AliyunPlayerSkinActivity>
@@ -234,6 +311,9 @@ class AliyunPlayerSkinActivity : Activity() {
         FixedToastUtils.show(this@AliyunPlayerSkinActivity.applicationContext, R.string.toast_play_compleion)
     }
 
+    /**
+     * 开始渲染监听
+     */
     private class MyFrameInfoListener(skinActivity: AliyunPlayerSkinActivity) : IPlayer.OnRenderingStartListener {
 
         private val activityWeakReference: WeakReference<AliyunPlayerSkinActivity>
@@ -252,6 +332,9 @@ class AliyunPlayerSkinActivity : Activity() {
 
     }
 
+    /**
+     * 开始播放监听
+     */
     private inner class MyPlayViewClickListener(activity: AliyunPlayerSkinActivity) : OnPlayerViewClickListener {
 
         private val weakReference: WeakReference<AliyunPlayerSkinActivity>
@@ -270,6 +353,9 @@ class AliyunPlayerSkinActivity : Activity() {
         }
     }
 
+    /**
+     * 修改视频质量监听
+     */
     private class MyChangeQualityListener(skinActivity: AliyunPlayerSkinActivity) : OnChangeQualityListener {
 
         private val activityWeakReference: WeakReference<AliyunPlayerSkinActivity>
@@ -302,6 +388,9 @@ class AliyunPlayerSkinActivity : Activity() {
                 getString(R.string.log_change_quality_fail))
     }
 
+    /**
+     * 停止播放监听
+     */
     private class MyStoppedListener(skinActivity: AliyunPlayerSkinActivity) : OnStoppedListener {
 
         private val activityWeakReference: WeakReference<AliyunPlayerSkinActivity>
@@ -337,6 +426,9 @@ class AliyunPlayerSkinActivity : Activity() {
         FixedToastUtils.show(this@AliyunPlayerSkinActivity.applicationContext, R.string.log_play_stopped)
     }
 
+    /**
+     * 设置播放源
+     */
     private fun setPlaySource() {
         if ("localSource" == PlayParameter.PLAY_PARAM_TYPE) {
             val urlSource = UrlSource()
@@ -371,35 +463,6 @@ class AliyunPlayerSkinActivity : Activity() {
         }
     }
 
-
-    override fun onResume() {
-        super.onResume()
-        mIsInBackground = false
-        updatePlayerViewMode()
-        if (mAliyunVodPlayerView != null) {
-            mAliyunVodPlayerView!!.setAutoPlay(true)
-            mAliyunVodPlayerView!!.onResume()
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        mIsInBackground = true
-        if (mAliyunVodPlayerView != null) {
-            mAliyunVodPlayerView!!.setAutoPlay(false)
-            mAliyunVodPlayerView!!.onStop()
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        updatePlayerViewMode()
-    }
-
     private fun updateDownloadTaskTip() {
         if (currentTab != TAB_DOWNLOAD_LIST) {
 
@@ -412,15 +475,15 @@ class AliyunPlayerSkinActivity : Activity() {
         }
     }
 
+    /**
+     * 更新播放模式
+     */
     private fun updatePlayerViewMode() {
         if (mAliyunVodPlayerView != null) {
             val orientation = resources.configuration.orientation
             if (orientation == Configuration.ORIENTATION_PORTRAIT) {
                 //转为竖屏了。
                 //显示状态栏
-                //                if (!isStrangePhone()) {
-                //                    getSupportActionBar().show();
-                //                }
 
                 this.window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN)
                 mAliyunVodPlayerView!!.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
@@ -431,18 +494,16 @@ class AliyunPlayerSkinActivity : Activity() {
                 aliVcVideoViewLayoutParams.height = (ScreenUtils.getWidth(this) * 9.0f / 16).toInt()
                 aliVcVideoViewLayoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
             } else if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-//                //转到横屏了。
-//                //隐藏状态栏
-//                if (!isStrangePhone) {
-//                    this.window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-//                            WindowManager.LayoutParams.FLAG_FULLSCREEN)
-//                    mAliyunVodPlayerView!!.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-//                            or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-//                            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-//                            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-//                            or View.SYSTEM_UI_FLAG_FULLSCREEN
-//                            or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
-//                }
+                //转到横屏了。
+                //隐藏状态栏
+                this.window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                        WindowManager.LayoutParams.FLAG_FULLSCREEN)
+                mAliyunVodPlayerView!!.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
                 //设置view的布局，宽高
                 val aliVcVideoViewLayoutParams = mAliyunVodPlayerView!!
                         .layoutParams as LinearLayout.LayoutParams
@@ -450,40 +511,6 @@ class AliyunPlayerSkinActivity : Activity() {
                 aliVcVideoViewLayoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
             }
         }
-    }
-
-    override fun onDestroy() {
-        if (mAliyunVodPlayerView != null) {
-            mAliyunVodPlayerView!!.onDestroy()
-            mAliyunVodPlayerView = null
-        }
-
-        if (playerHandler != null) {
-            playerHandler!!.removeMessages(DOWNLOAD_ERROR)
-            playerHandler = null
-        }
-
-        if (commenUtils != null) {
-            commenUtils!!.onDestroy()
-            commenUtils = null
-        }
-        super.onDestroy()
-    }
-
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (mAliyunVodPlayerView != null) {
-            val handler = mAliyunVodPlayerView!!.onKeyDown(keyCode, event)
-            if (!handler) {
-                return false
-            }
-        }
-        return super.onKeyDown(keyCode, event)
-    }
-
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-        //解决某些手机上锁屏之后会出现标题栏的问题。
-        updatePlayerViewMode()
     }
 
     private class PlayerHandler(activity: AliyunPlayerSkinActivity) : Handler() {
